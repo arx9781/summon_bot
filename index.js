@@ -1,7 +1,7 @@
 require('dotenv').config();
 const { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder } = require('discord.js');
-const fetch = require('node-fetch');
 
+// Use dynamic import for node-fetch (ES module)
 // Create a new client instance
 const client = new Client({
   intents: [
@@ -22,12 +22,14 @@ const commands = [
     )
 ];
 
-// Register slash commands
-const rest = new REST({ version: '10' }).setToken(process.env.BOT_TOKEN);
+// Register slash commands when the bot starts up
+client.once('ready', async () => {
+  console.log('Summon is online!');
 
-(async () => {
   try {
     console.log('Started refreshing application (/) commands.');
+
+    const rest = new REST({ version: '10' }).setToken(process.env.BOT_TOKEN);
 
     await rest.put(
       Routes.applicationCommands(client.user.id),
@@ -38,11 +40,6 @@ const rest = new REST({ version: '10' }).setToken(process.env.BOT_TOKEN);
   } catch (error) {
     console.error(error);
   }
-})();
-
-// When the client is ready, run this code
-client.once('ready', () => {
-  console.log('Summon is online!');
 });
 
 client.on('interactionCreate', async interaction => {
@@ -57,6 +54,9 @@ client.on('interactionCreate', async interaction => {
     await interaction.deferReply();
 
     try {
+      // Dynamic import for node-fetch v3 (ES Module)
+      const { default: fetch } = await import('node-fetch');
+
       // Fetch from Wikipedia API
       const response = await fetch(
         `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topic)}`
